@@ -172,18 +172,30 @@
       background-repeat: no-repeat, no-repeat, repeat, repeat, repeat, repeat;
       border: 1px solid var(--borda);
       min-height: 340px;
-    }
-    .text-panel {
+        /* ── SOBRE (Menu "A Casa Dessa" corrigido) ── */
+    .sobre {
       position: relative;
-      z-index: 1;
+      border-radius: 14px;
+      padding: 56px 32px;
+      overflow: hidden;
+      background-color: #0d0d0d; /* Fundo base mais escuro para alto contraste */
+      background-image:
+        /* Gradiente frontal muito mais opaco para escurecer as linhas do SVG e dar leitura total */
+        linear-gradient(155deg, rgba(13, 13, 13, 0.93) 0%, rgba(20, 20, 20, 0.88) 50%, rgba(13, 13, 13, 0.95) 100%),
+        url('data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgOTAwIDU2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiBmaWxsPSJub25lIj4KICA8IS0tIOKVkOKVkOKVkCBJbHVzdHJhw6fDo28gb3JpZ2luYWwgZW0gbGluZS1hcnQ6IGNhbnRvIGRhIGJhcmJlYXJpYSDilZDilZDilZAgLS0+CgogIDwhLS0gcGFyZWRlIGRlIHRpam9sbyAobGluaGFzIGZpbmFzLCB0b20gcXVlbnRlIGUgbWFpcyBjbGFybyBwYXJhIGxlaXR1cmEpIC0tPgogIDxnIHN0cm9rZT0iIzhhNzg2MCIgc3Ryb2tlLXdpZHRoPSIxLjgiIG9wYWNpdHk9Ii45NSI+CiAgICA8bGluZSB4MT0iMCIgICB5MT0iNjAiICB4Mj0iOTAwIiB5Mj0iNjAiLz4KICAgIDxsaW5lIHgxPSIwIiAgIHkxPSIxMTAiIHgyPSI5MDAiIHkyPSIxMTAiLz4KICAgIDxsaW5lIHgxPSIwIiAgIHkxPSIxNjAiIHgyPSI5MDAiIHkyPSIxNjAiLz4KICAgIDxsaW5lIHgxPSIwIiAgIHkxPSIyMTAiIHgyPSI5MDAiIHkyPSIyMTAiLz4KICAgIDxsaW5lIHgxPSIwIiAgIHkxPSIyNjAiIHgyPSI5MDAiIHkyPSIyNjAiLz4KICAgIDxsaW5lIHgxPSIwIiAgIHkxPSIzMTAiIHgyPSI5MDAiIHkyPSIzMTAiLz4KICAgIDxsaW5lIHgxPSI0MCIgeTE9IjYwIiB4Mj0iNDAiIHkyPSIxMTAiLz4gICA8bGluZSB4MT0iMTQwIiB5MT0iNjAiIHgyPSIxNDAiIHkyPSIxMTAiLz4gPGxpbmUgeDE9IjI0MCIgeTE9IjYwIiB4Mj0iMjQwIiB5Mj0iMTEwIi8+CiAgICA8bGluZSB4MT0iMzQwIiB5MT0iNjAiIHgyPSIzNDAiIHkyPSIxMTAiLz4gPGxpbmUgeDE9IjQ0MCIgeTE9IjYwIiB4Mj0iNDQwIiB5Mj0iMTEwIi8+IDxsaW5lIHgxPSI1NDAiIHkxPSI2MCIgeDI9IjU0MCIgeTI9IjExMCIvPgogICAgPGxpbmUgeDE9IjY0MCIgeTE9IjYwIiB4Mj0iNjQwIiB5Mj0iMTEwIi8+IDxsaW5lIHgxPSI3NDAiIHkxPSI2MCIgeDI9Ijc0MCIgeTI9IjExMCIvPiA8bGluZSB4MT0iODQwIiB5MT0iNjAiIHgyPSI4NDAiIHkyPSIxMTAiLz4KICAgIDxsaW5lIHgxPSI5MCIgeTE9IjExMCIgeDI9IjkwIiB5Mj0iMTYwIi8+ICA8bGluZSB4MT0iMTkwIiB5MT0iMTEwIiB4Mj0iMTkwIiB5Mj0iMTYwIi8+IDxsaW5lIHgxPSIyOTAiIHkxPSIxMTAiIHgyPSIyOTAiIHkyPSIxNjAiLz4KICAgIDxsaW5lIHgxPSIzOTAiIHkxPSIxMTAiIHgyPSIzOTAiIHkyPSIxNjAiLz4gPGxpbmUgeDE9IjQ5MCIgeTE9IjExMCIgeDI9IjQ5MCIgeTI9IjE2MCIvPiA8bGluZSB4MT0iNTkwIiB5MT0iMTAiIHgyPSI1OTAiIHkyPSIxNjAiLz4KICAgIDxsaW5lIHgxPSI2OTAiIHkxPSIxMTAiIHgyPSI2OTAiIHkyPSIxNjAiLz4gPGxpbmUgeDE9Ijc5MCIgeTE9IjExMCIgeDI9Ijc5MCIgeTI9IjE2MCIvPgogICAgPGxpbmUgeDE9IjQwIiB5MT0iMTYwIiB4Mj0iNDAiIHkyPSIzMTAiLz4gIDxsaW5lIHgxPSIxNDAiIHkxPSIxNjAiIHgyPSIxNDAiIHkyPSIzMTAiLz4gPGxpbmUgeDE9IjI0MCIgeTE9IjE2MCIgeDI9IjI0MCIgeTI9IjMxMCIvPgogICAgPGxpbmUgeDE9IjM0MCIgeTE9IjE2MCIgeDI9IjM0MCIgeTI9IjMxMCIvPiA8bGluZSB4MT0iNDQwIiB5MT0iMTYwIiB4Mj0iNDQwIiB5Mj0iMzEwIi8+IDxsaW5lIHgxPSI1NDAiIHkxPSIxNjAiIHgyPSI1NDAiIHkyPSIzMTAiLz4KICAgIDxsaW5lIHgxPSI2NDAiIHkxPSIxNjAiIHgyPSI2NDAiIHkyPSIzMTAiLz4gPGxpbmUgeDE9Ijc0MCIgeTE9IjE2MCIgeDI9Ijc0MCIgeTI9IjMxMCIvPiA8bGluZSB4MT0iODQwIiB5MT0iMTYwIiB4Mj0iODQwIiB5Mj0iMzEwIi8+CiAgICA8bGluZSB4MT0iOTAiIHkxPSIyMTAiIHgyPSI5MCIgeTI9IjI2MCIvPiAgPGxpbmUgeDE9IjE5MCIgeTE9IjIxMCIgeDI9IjE5MCIgeTI9IjI2MCIvPiA8bGluZSB4MT0iMjkwIiB5MT0iMjEwIiB4Mj0iMjkwIiB5Mj0iMjYwIi8+CiAgICA8bGluZSB4MT0iMzkwIiB5MT0iMjEwIiB4Mj0iMzkwIiB5Mj0iMjYwIi8+IDxsaW5lIHgxPSI0OTAiIHkxPSIyMTAiIHgyPSI0OTAiIHkyPSIyNjAiLz4gPGxpbmUgeDE9IjU5MCIgeTE9IjIxMCIgeDI9IjU5MCIgeTI9IjYwIi8+CiAgICA8bGluZSB4MT0iNjkwIiB5MT0iMjEwIiB4Mj0iNjkwIiB5Mj0iMjYwIi8+IDxsaW5lIHgxPSI3OTAiIHkxPSIyMTAiIHgyPSI3OTAiIHkyPSIyNjAiLz4KICAgIDxsaW5lIHgxPSI0MCIgeTE9IjI2MCIgeDI9IjQwIiB5Mj0iMzEwIi8+ICA8bGluZSB4MT0iMTQwIiB5MT0iMjYwIiB4Mj0iMTQwIiB5Mj0iMzEwIi8+IDxsaW5lIHgxPSIyNDAiIHkxPSIyNjAiIHgyPSIyNDAiIHkyPSIzMTAiLz4KICAgIDxsaW5lIHgxPSIzNDAiIHkxPSIyNjAiIHgyPSIzNDAiIHkyPSIzMTAiLz4gPGxpbmUgeDE9IjM0MCIgeTE9IjI2MCIgeDI9IjM0MCIgeTI9IjMxMCIvPgo8L3N2Zz4=');
+      background-size: cover;
+      background-position: center;
+      border: 1px solid var(--borda);
     }
-    .sobre .step-label,
-    .sobre .section-title,
-    .sobre .section-sub,
-    .sobre .sobre-tag,
-    .sobre p {
-      text-shadow: 0 1px 3px rgba(0,0,0,1), 0 2px 14px rgba(0,0,0,.95), 0 0 30px rgba(0,0,0,.85);
+
+    /* Adiciona sombra projetada sutil nas letras do menu para criar separação 3D */
+    .sobre h2, 
+    .sobre p, 
+    .sobre h3,
+    .sobre .step-label {
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
     }
+
     .sobre::before {
       /* mancha de couro / vinheta quente no canto, sugerindo a poltrona */
       content: '';
