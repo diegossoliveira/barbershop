@@ -257,13 +257,27 @@
   </footer>
 
   <script>
-    const listaDeCards = document.querySelectorAll('.card');
-    listaDeCards.forEach(card => {
-      card.addEventListener('click', () => {
-        listaDeCards.forEach(c => c.classList.remove('active'));
-        card.classList.add('active');
+      <!-- ── SCRIPT DE ATIVAÇÃO DO CLIQUE CORRIGIDO ── -->
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const listaDeCards = document.querySelectorAll('.card');
+      
+      listaDeCards.forEach(card => {
+        card.addEventListener('click', (e) => {
+          // Evita que links ou eventos nativos resetem ou atualizem a página
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Remove a classe active de todos os outros cards
+          listaDeCards.forEach(c => c.classList.remove('active'));
+          
+          // Aplica o formato de bigode estritamente no card clicado
+          card.classList.add('active');
+        });
       });
     });
+  </script>
+
   </script>
 
 </body>
