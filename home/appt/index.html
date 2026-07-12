@@ -1,70 +1,615 @@
-613
-614
-615
-616
-617
-618
-619
-620
-621
-622
-623
-624
-625
-626
-627
-628
-629
-630
-631
-632
-633
-634
-635
-636
-637
-638
-639
-640
-641
-642
-643
-644
-645
-646
-647
-648
-649
-650
-651
-652
-653
-654
-655
-656
-657
-658
-659
-660
-661
-662
-663
-664
-665
-666
-667
-668
-669
-670
-671
-672
-673
-674
-675
-676
-677
-678
 <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agende seu horário</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --preto:    #0d0d0d;
+      --carvao:   #1a1a1a;
+      --grafite:  #2b2b2b;
+      --borda:    #333333;
+      --ouro:     #c9a84c;
+      --ouro-dim: #a07830;
+      --texto:    #f0ece4;
+      --muted:    #888880;
+      --erro:     #d94f4f;
+      --ok:       #4caf7d;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--preto);
+      color: var(--texto);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      background: var(--carvao);
+      border-bottom: 1px solid var(--borda);
+      padding: 48px 24px 40px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--ouro);
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 10vw, 88px);
+      line-height: .95;
+      letter-spacing: .02em;
+      color: var(--texto);
+    }
+    .hero h1 span { color: var(--ouro); }
+    .hero-sub {
+      margin-top: 14px;
+      font-size: 14px;
+      color: var(--muted);
+      letter-spacing: .04em;
+    }
+
+    /* ── CONTAINER ── */
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    /* ── STEP ── */
+    .step { margin-bottom: 40px; }
+    .step-label {
+      font-size: 10px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--ouro);
+      margin-bottom: 10px;
+    }
+    .step h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+
+    /* ── CARDS GRADE ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .card {
+      background: var(--carvao);
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      padding: 16px 12px;
+      cursor: pointer;
+      transition: border-color .2s, transform .15s;
+      text-align: center;
+    }
+    .card:hover { border-color: var(--ouro-dim); transform: translateY(-2px); }
+    .card.selected {
+      border-color: var(--ouro);
+      background: #1e1a0f;
+    }
+    .card-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .card-sub  { font-size: 11px; color: var(--muted); }
+    .card-price { font-size: 13px; color: var(--ouro); margin-top: 6px; font-weight: 600; }
+
+    /* ── CALENDÁRIO ── */
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .cal-nav {
+      background: var(--grafite);
+      border: 1px solid var(--borda);
+      color: var(--texto);
+      width: 36px; height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .2s;
+    }
+    .cal-nav:hover { border-color: var(--ouro); }
+    .cal-month { font-size: 15px; font-weight: 600; }
+
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+    }
+    .cal-day-name {
+      text-align: center;
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-bottom: 6px;
+    }
+    .cal-day {
+      aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .15s;
+    }
+    .cal-day:hover:not(.disabled):not(.empty) { border-color: var(--ouro-dim); }
+    .cal-day.selected { background: var(--ouro); color: var(--preto); font-weight: 700; }
+    .cal-day.today:not(.selected) { border-color: var(--ouro-dim); color: var(--ouro); }
+    .cal-day.disabled { color: var(--borda); cursor: default; }
+    .cal-day.empty { cursor: default; }
+
+    /* ── HORÁRIOS ── */
+    .slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 10px;
+    }
+    .slot {
+      background: var(--carvao);
+      border: 1px solid var(--borda);
+      border-radius: 8px;
+      padding: 12px 8px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .slot:hover { border-color: var(--ouro-dim); }
+    .slot.selected { background: var(--ouro); color: var(--preto); border-color: var(--ouro); }
+
+    /* ── FORMULÁRIO ── */
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; letter-spacing: .06em; }
+    input[type="text"], input[type="tel"] {
+      width: 100%;
+      background: var(--carvao);
+      border: 1px solid var(--borda);
+      border-radius: 8px;
+      color: var(--texto);
+      font-size: 15px;
+      padding: 13px 14px;
+      outline: none;
+      font-family: 'Inter', sans-serif;
+      transition: border-color .2s;
+    }
+    input:focus { border-color: var(--ouro); }
+
+    /* ── RESUMO ── */
+    .resumo {
+      background: var(--carvao);
+      border: 1px solid var(--borda);
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .resumo-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 14px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--borda);
+    }
+    .resumo-row:last-child { border-bottom: none; }
+    .resumo-row span:first-child { color: var(--muted); }
+    .resumo-row span:last-child  { font-weight: 600; }
+
+    /* ── BOTÃO PRINCIPAL ── */
+    .btn-confirmar {
+      width: 100%;
+      background: var(--ouro);
+      color: var(--preto);
+      border: none;
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 15px;
+      font-weight: 700;
+      font-family: 'Inter', sans-serif;
+      letter-spacing: .04em;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-confirmar:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
+    .btn-confirmar:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+    /* ── DIVISOR ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--borda);
+      margin: 40px 0;
+    }
+
+    /* ── EMPTY / LOADING ── */
+    .empty-msg { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
+
+    /* ── TOAST ── */
+    #toast {
+      position: fixed;
+      bottom: 28px; left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--ok);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      opacity: 0;
+      transition: all .35s ease;
+      z-index: 9999;
+      white-space: nowrap;
+    }
+    #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    #toast.erro  { background: var(--erro); }
+
+    /* ── SUCESSO ── */
+    #tela-sucesso {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .sucesso-icon { font-size: 64px; margin-bottom: 16px; }
+    .sucesso-titulo { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--ouro); }
+    .sucesso-sub { color: var(--muted); font-size: 14px; margin-top: 10px; }
+    .btn-novo {
+      margin-top: 32px;
+      background: transparent;
+      border: 1px solid var(--ouro);
+      color: var(--ouro);
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all .2s;
+    }
+    .btn-novo:hover { background: var(--ouro); color: var(--preto); }
+
+    @media (max-width: 420px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="hero">
+  <p class="hero-eyebrow">Agendamento Online</p>
+  <h1>MARQUE SEU <span>HORÁRIO</span></h1>
+  <p class="hero-sub">Rápido, fácil e sem precisar ligar</p>
+</div>
+
+<div class="container">
+
+  <!-- TELA SUCESSO -->
+  <div id="tela-sucesso">
+    <div class="sucesso-icon">✂️</div>
+    <div class="sucesso-titulo">AGENDADO!</div>
+    <p class="sucesso-sub" id="sucesso-detalhe"></p>
+    <button class="btn-novo" onclick="reiniciar()">Fazer outro agendamento</button>
+  </div>
+
+  <!-- FORMULÁRIO PRINCIPAL -->
+  <div id="tela-form">
+
+    <!-- PASSO 1: PROFISSIONAL -->
+    <div class="step" id="passo-profissional">
+      <p class="step-label">Passo 1</p>
+      <h2>Escolha o profissional</h2>
+      <div class="cards" id="lista-profissionais">
+        <p class="empty-msg">Carregando...</p>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- PASSO 2: SERVIÇO -->
+    <div class="step" id="passo-servico" style="opacity:.35;pointer-events:none;">
+      <p class="step-label">Passo 2</p>
+      <h2>Escolha o serviço</h2>
+      <div class="cards" id="lista-servicos">
+        <p class="empty-msg">Selecione um profissional primeiro</p>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- PASSO 3: DATA -->
+    <div class="step" id="passo-data" style="opacity:.35;pointer-events:none;">
+      <p class="step-label">Passo 3</p>
+      <h2>Escolha a data</h2>
+      <div class="calendar-header">
+        <button class="cal-nav" id="btn-mes-ant">‹</button>
+        <span class="cal-month" id="cal-titulo"></span>
+        <button class="cal-nav" id="btn-mes-prox">›</button>
+      </div>
+      <div class="calendar-grid" id="calendario"></div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- PASSO 4: HORÁRIO -->
+    <div class="step" id="passo-horario" style="opacity:.35;pointer-events:none;">
+      <p class="step-label">Passo 4</p>
+      <h2>Escolha o horário</h2>
+      <div class="slots" id="lista-horarios">
+        <p class="empty-msg">Selecione uma data primeiro</p>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- PASSO 5: DADOS + CONFIRMAÇÃO -->
+    <div class="step" id="passo-dados" style="opacity:.35;pointer-events:none;">
+      <p class="step-label">Passo 5</p>
+      <h2>Seus dados</h2>
+
+      <div class="form-group">
+        <label>SEU NOME</label>
+        <input type="text" id="inp-nome" placeholder="Como você se chama?" maxlength="60" />
+      </div>
+      <div class="form-group">
+        <label>TELEFONE / WHATSAPP</label>
+        <input type="tel" id="inp-telefone" placeholder="(11) 99999-9999" maxlength="20" />
+      </div>
+
+      <div class="resumo" id="resumo-box" style="display:none;">
+        <div class="resumo-row"><span>Profissional</span><span id="r-prof">—</span></div>
+        <div class="resumo-row"><span>Serviço</span><span id="r-serv">—</span></div>
+        <div class="resumo-row"><span>Data</span><span id="r-data">—</span></div>
+        <div class="resumo-row"><span>Horário</span><span id="r-hora">—</span></div>
+      </div>
+
+      <button class="btn-confirmar" id="btn-confirmar" disabled onclick="confirmarAgendamento()">
+        Confirmar agendamento
+      </button>
+    </div>
+
+  </div><!-- /#tela-form -->
+</div><!-- /.container -->
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/supabase.js"></script>
+<script>
+// ─────────────────────────────────────────
+//  ESTADO
+// ─────────────────────────────────────────
+let sel = { profissional: null, servico: null, data: null, horario: null };
+let calAno, calMes;
+
+const hoje = new Date();
+calAno = hoje.getFullYear();
+calMes = hoje.getMonth();
+
+// ─────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  carregarProfissionais();
+  renderCalendario();
+  document.getElementById('btn-mes-ant').onclick  = () => mudarMes(-1);
+  document.getElementById('btn-mes-prox').onclick = () => mudarMes(1);
+  document.getElementById('inp-nome').addEventListener('input', checarFormulario);
+  document.getElementById('inp-telefone').addEventListener('input', checarFormulario);
+});
+
+// ─────────────────────────────────────────
+//  PROFISSIONAIS
+// ─────────────────────────────────────────
+async function carregarProfissionais() {
+  const { data, error } = await db.from('profissionais').select('*').eq('ativo', true).order('nome');
+  const el = document.getElementById('lista-profissionais');
+  if (error || !data?.length) { el.innerHTML = '<p class="empty-msg">Nenhum profissional disponível</p>'; return; }
+  el.innerHTML = data.map(p => `
+    <div class="card" data-id="${p.id}" data-nome="${p.nome}" onclick="selecionarProfissional(this)">
+      <div class="card-name">${p.nome}</div>
+      <div class="card-sub">${p.especialidade || ''}</div>
+    </div>`).join('');
+}
+
+function selecionarProfissional(el) {
+  document.querySelectorAll('#lista-profissionais .card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  sel.profissional = { id: el.dataset.id, nome: el.dataset.nome };
+  sel.servico = null; sel.data = null; sel.horario = null;
+  ativarPasso('passo-servico');
+  carregarServicos();
+  desativarPasso('passo-data');
+  desativarPasso('passo-horario');
+  desativarPasso('passo-dados');
+  atualizarResumo();
+}
+
+// ─────────────────────────────────────────
+//  SERVIÇOS
+// ─────────────────────────────────────────
+async function carregarServicos() {
+  const el = document.getElementById('lista-servicos');
+  el.innerHTML = '<p class="empty-msg">Carregando...</p>';
+
+  const { data, error } = await db.from('servicos')
+    .select('*').eq('ativo', true).order('nome');
+
+  if (error || !data?.length) { el.innerHTML = '<p class="empty-msg">Nenhum serviço cadastrado</p>'; return; }
+  el.innerHTML = data.map(s => `
+    <div class="card" data-id="${s.id}" data-nome="${s.nome}" data-preco="${s.preco || ''}" onclick="selecionarServico(this)">
+      <div class="card-name">${s.nome}</div>
+      ${s.duracao_min ? `<div class="card-sub">${s.duracao_min} min</div>` : ''}
+      ${s.preco ? `<div class="card-price">R$ ${Number(s.preco).toFixed(2)}</div>` : ''}
+    </div>`).join('');
+}
+
+function selecionarServico(el) {
+  document.querySelectorAll('#lista-servicos .card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  sel.servico = { id: el.dataset.id, nome: el.dataset.nome };
+  sel.data = null; sel.horario = null;
+  ativarPasso('passo-data');
+  desativarPasso('passo-horario');
+  desativarPasso('passo-dados');
+  atualizarResumo();
+}
+
+// ─────────────────────────────────────────
+//  CALENDÁRIO
+// ─────────────────────────────────────────
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DIAS  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function mudarMes(d) {
+  calMes += d;
+  if (calMes < 0)  { calMes = 11; calAno--; }
+  if (calMes > 11) { calMes = 0;  calAno++; }
+  renderCalendario();
+}
+
+function renderCalendario() {
+  document.getElementById('cal-titulo').textContent = `${MESES[calMes]} ${calAno}`;
+  const grid = document.getElementById('calendario');
+  const primeiroDia = new Date(calAno, calMes, 1).getDay();
+  const totalDias   = new Date(calAno, calMes + 1, 0).getDate();
+
+  let html = DIAS.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+  for (let i = 0; i < primeiroDia; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= totalDias; d++) {
+    const data   = new Date(calAno, calMes, d);
+    const eHoje  = data.toDateString() === hoje.toDateString();
+    const passado = data < new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+    const str    = `${calAno}-${String(calMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const selec  = sel.data === str;
+    let cls = 'cal-day';
+    if (passado) cls += ' disabled';
+    else if (selec) cls += ' selected';
+    else if (eHoje) cls += ' today';
+
+    html += `<div class="${cls}" ${!passado ? `onclick="selecionarData('${str}',this)"` : ''}>${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function selecionarData(str, el) {
+  sel.data = str;
+  sel.horario = null;
+  renderCalendario();
+  ativarPasso('passo-horario');
+  desativarPasso('passo-dados');
+  carregarHorarios(str);
+  atualizarResumo();
+}
+
+// ─────────────────────────────────────────
+//  HORÁRIOS
+// ─────────────────────────────────────────
+async function carregarHorarios(dataStr) {
+  const el = document.getElementById('lista-horarios');
+  el.innerHTML = '<p class="empty-msg">Carregando horários...</p>';
+
+  // busca slots configurados para o profissional nesse dia da semana
+  const diaSemana = new Date(dataStr + 'T12:00:00').getDay();
+  const { data: slots } = await db.from('horarios_disponiveis')
+    .select('horario')
+    .eq('profissional_id', sel.profissional.id)
+    .eq('dia_semana', diaSemana)
+    .order('horario');
+
+  if (!slots?.length) { el.innerHTML = '<p class="empty-msg">Sem horários para este dia</p>'; return; }
+
+  // busca agendamentos já feitos
+  const { data: ocupados } = await db.from('agendamentos')
+    .select('horario')
+    .eq('profissional_id', sel.profissional.id)
+    .eq('data', dataStr)
+    .neq('status', 'cancelado');
+
+  const ocupSet = new Set((ocupados || []).map(a => a.horario));
+
+  const livres = slots.filter(s => !ocupSet.has(s.horario));
+  if (!livres.length) { el.innerHTML = '<p class="empty-msg">Todos os horários estão ocupados</p>'; return; }
+
+  el.innerHTML = livres.map(s => `
+    <div class="slot" data-hora="${s.horario}" onclick="selecionarHorario('${s.horario}', this)">
+      ${s.horario.slice(0,5)}
+    </div>`).join('');
+}
+
+function selecionarHorario(hora, el) {
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  sel.horario = hora;
+  ativarPasso('passo-dados');
+  atualizarResumo();
+  checarFormulario();
+  document.getElementById('resumo-box').style.display = 'block';
+  setTimeout(() => document.getElementById('passo-dados').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+
+// ─────────────────────────────────────────
+//  RESUMO + FORMULÁRIO
+// ─────────────────────────────────────────
+function atualizarResumo() {
+  if (sel.profissional) document.getElementById('r-prof').textContent = sel.profissional.nome;
+  if (sel.servico)      document.getElementById('r-serv').textContent = sel.servico.nome;
+  if (sel.data)         document.getElementById('r-data').textContent = formatarData(sel.data);
+  if (sel.horario)      document.getElementById('r-hora').textContent = sel.horario.slice(0,5);
+}
+
+function formatarData(str) {
+  const [a, m, d] = str.split('-');
+  return `${d}/${m}/${a}`;
+}
+
+function checarFormulario() {
+  const ok = sel.profissional && sel.servico && sel.data && sel.horario
+    && document.getElementById('inp-nome').value.trim()
+    && document.getElementById('inp-telefone').value.trim();
+  document.getElementById('btn-confirmar').disabled = !ok;
+}
+
+// ─────────────────────────────────────────
+//  CONFIRMAR
+// ─────────────────────────────────────────
+async function confirmarAgendamento() {
+  const nome = document.getElementById('inp-nome').value.trim();
+  const tel  = document.getElementById('inp-telefone').value.trim();
+  const btn  = document.getElementById('btn-confirmar');
+  btn.disabled = true;
+  btn.textContent = 'Aguarde...';
+
+  // Verificação de conflito (race condition)
+  const { data: conf } = await db.from('agendamentos')
+    .select('id')
+    .eq('profissional_id', sel.profissional.id)
+    .eq('data', sel.data)
+    .eq('horario', sel.horario)
+    .neq('status', 'cancelado');
+
+  if (conf?.length) {
+    toast('Esse horário acabou de ser ocupado. Escolha outro.', true);
+    btn.disabled = false; btn.textContent = 'Confirmar agendamento';
+    sel.horario = null;
+    document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+    return;
+  }
 
   const { error } = await db.from('agendamentos').insert({
     profissional_id: sel.profissional.id,
@@ -130,5 +675,3 @@ function toast(msg, erro = false) {
 </script>
 </body>
 </html>
-
-Use Control + Shift + m to toggle the tab
