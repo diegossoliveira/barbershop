@@ -1,0 +1,134 @@
+613
+614
+615
+616
+617
+618
+619
+620
+621
+622
+623
+624
+625
+626
+627
+628
+629
+630
+631
+632
+633
+634
+635
+636
+637
+638
+639
+640
+641
+642
+643
+644
+645
+646
+647
+648
+649
+650
+651
+652
+653
+654
+655
+656
+657
+658
+659
+660
+661
+662
+663
+664
+665
+666
+667
+668
+669
+670
+671
+672
+673
+674
+675
+676
+677
+678
+<!DOCTYPE html>
+
+  const { error } = await db.from('agendamentos').insert({
+    profissional_id: sel.profissional.id,
+    servico_id:      sel.servico.id,
+    data:            sel.data,
+    horario:         sel.horario,
+    cliente_nome:    nome,
+    cliente_tel:     tel,
+    status:          'confirmado'
+  });
+
+  if (error) {
+    toast('Erro ao agendar. Tente novamente.', true);
+    btn.disabled = false; btn.textContent = 'Confirmar agendamento';
+    return;
+  }
+
+  document.getElementById('tela-form').style.display = 'none';
+  document.getElementById('tela-sucesso').style.display = 'block';
+  document.getElementById('sucesso-detalhe').textContent =
+    `${nome}, seu agendamento com ${sel.profissional.nome} está confirmado para ${formatarData(sel.data)} às ${sel.horario.slice(0,5)}.`;
+}
+
+function reiniciar() {
+  sel = { profissional: null, servico: null, data: null, horario: null };
+  document.getElementById('tela-form').style.display = 'block';
+  document.getElementById('tela-sucesso').style.display = 'none';
+  document.getElementById('inp-nome').value = '';
+  document.getElementById('inp-telefone').value = '';
+  document.getElementById('btn-confirmar').disabled = true;
+  document.getElementById('btn-confirmar').textContent = 'Confirmar agendamento';
+  document.getElementById('resumo-box').style.display = 'none';
+  desativarPasso('passo-servico');
+  desativarPasso('passo-data');
+  desativarPasso('passo-horario');
+  desativarPasso('passo-dados');
+  carregarProfissionais();
+  calAno = hoje.getFullYear(); calMes = hoje.getMonth();
+  renderCalendario();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ─────────────────────────────────────────
+//  UTILITÁRIOS
+// ─────────────────────────────────────────
+function ativarPasso(id) {
+  const el = document.getElementById(id);
+  el.style.opacity = '1'; el.style.pointerEvents = 'auto';
+}
+function desativarPasso(id) {
+  const el = document.getElementById(id);
+  el.style.opacity = '.35'; el.style.pointerEvents = 'none';
+}
+
+let toastTimer;
+function toast(msg, erro = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'show' + (erro ? ' erro' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = '', 3500);
+}
+</script>
+</body>
+</html>
+
+Use Control + Shift + m to toggle the tab
