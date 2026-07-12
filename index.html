@@ -3,25 +3,27 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Painel Admin — Barbearia</title>
+  <title>Agende seu horário</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --preto:   #0d0d0d;
-      --carvao:  #1a1a1a;
-      --grafite: #242424;
-      --borda:   #2e2e2e;
-      --ouro:    #c9a84c;
-      --texto:   #f0ece4;
-      --muted:   #777770;
-      --ok:      #4caf7d;
-      --erro:    #d94f4f;
-      --aviso:   #d4912a;
+      --preto:    #0d0d0d;
+      --carvao:   #1a1a1a;
+      --grafite:  #2b2b2b;
+      --borda:    #333333;
+      --ouro:     #c9a84c;
+      --ouro-dim: #a07830;
+      --texto:    #f0ece4;
+      --muted:    #888880;
+      --erro:     #d94f4f;
+      --ok:       #4caf7d;
     }
+
+    html { scroll-behavior: smooth; }
 
     body {
       background: var(--preto);
@@ -30,670 +32,636 @@
       min-height: 100vh;
     }
 
-    /* ── TOPBAR ── */
-    .topbar {
+    /* ── HERO ── */
+    .hero {
       background: var(--carvao);
       border-bottom: 1px solid var(--borda);
-      padding: 0 20px;
+      padding: 48px 24px 40px;
+      text-align: center;
+    }
+    .hero-eyebrow {
+      font-size: 11px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      color: var(--ouro);
+      margin-bottom: 12px;
+    }
+    .hero h1 {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: clamp(52px, 10vw, 88px);
+      line-height: .95;
+      letter-spacing: .02em;
+      color: var(--texto);
+    }
+    .hero h1 span { color: var(--ouro); }
+    .hero-sub {
+      margin-top: 14px;
+      font-size: 14px;
+      color: var(--muted);
+      letter-spacing: .04em;
+    }
+
+    /* ── CONTAINER ── */
+    .container {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+
+    /* ── STEP ── */
+    .step { margin-bottom: 40px; }
+    .step-label {
+      font-size: 10px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--ouro);
+      margin-bottom: 10px;
+    }
+    .step h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 18px;
+    }
+
+    /* ── CARDS GRADE ── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .card {
+      background: var(--carvao);
+      border: 1px solid var(--borda);
+      border-radius: 10px;
+      padding: 16px 12px;
+      cursor: pointer;
+      transition: border-color .2s, transform .15s;
+      text-align: center;
+    }
+    .card:hover { border-color: var(--ouro-dim); transform: translateY(-2px); }
+    .card.selected {
+      border-color: var(--ouro);
+      background: #1e1a0f;
+    }
+    .card-name { font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+    .card-sub  { font-size: 11px; color: var(--muted); }
+    .card-price { font-size: 13px; color: var(--ouro); margin-top: 6px; font-weight: 600; }
+
+    /* ── CALENDÁRIO ── */
+    .calendar-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      height: 60px;
-      position: sticky; top: 0; z-index: 100;
+      margin-bottom: 16px;
     }
-    .topbar-logo {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 22px;
-      letter-spacing: .06em;
-    }
-    .topbar-logo span { color: var(--ouro); }
-    .topbar-right { display: flex; gap: 12px; align-items: center; }
-
-    /* ── TABS ── */
-    .tabs {
-      display: flex;
-      gap: 4px;
-      background: var(--carvao);
-      border-bottom: 1px solid var(--borda);
-      padding: 0 20px;
-      overflow-x: auto;
-    }
-    .tab {
-      padding: 14px 18px;
-      font-size: 13px;
-      font-weight: 600;
-      color: var(--muted);
+    .cal-nav {
+      background: var(--grafite);
+      border: 1px solid var(--borda);
+      color: var(--texto);
+      width: 36px; height: 36px;
+      border-radius: 8px;
       cursor: pointer;
-      border-bottom: 2px solid transparent;
-      white-space: nowrap;
-      transition: all .2s;
+      font-size: 18px;
+      display: flex; align-items: center; justify-content: center;
+      transition: border-color .2s;
     }
-    .tab:hover { color: var(--texto); }
-    .tab.active { color: var(--ouro); border-bottom-color: var(--ouro); }
+    .cal-nav:hover { border-color: var(--ouro); }
+    .cal-month { font-size: 15px; font-weight: 600; }
 
-    /* ── CONTENT ── */
-    .content { padding: 28px 20px 60px; max-width: 960px; margin: 0 auto; }
-
-    /* ── CARDS STAT ── */
-    .stats {
+    .calendar-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-      gap: 14px;
-      margin-bottom: 32px;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
     }
-    .stat-card {
+    .cal-day-name {
+      text-align: center;
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding-bottom: 6px;
+    }
+    .cal-day {
+      aspect-ratio: 1;
+      display: flex; align-items: center; justify-content: center;
+      border-radius: 8px;
+      font-size: 13px;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all .15s;
+    }
+    .cal-day:hover:not(.disabled):not(.empty) { border-color: var(--ouro-dim); }
+    .cal-day.selected { background: var(--ouro); color: var(--preto); font-weight: 700; }
+    .cal-day.today:not(.selected) { border-color: var(--ouro-dim); color: var(--ouro); }
+    .cal-day.disabled { color: var(--borda); cursor: default; }
+    .cal-day.empty { cursor: default; }
+
+    /* ── HORÁRIOS ── */
+    .slots {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+      gap: 10px;
+    }
+    .slot {
       background: var(--carvao);
       border: 1px solid var(--borda);
-      border-radius: 12px;
-      padding: 18px;
+      border-radius: 8px;
+      padding: 12px 8px;
+      text-align: center;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all .15s;
     }
-    .stat-label { font-size: 11px; color: var(--muted); letter-spacing: .1em; text-transform: uppercase; }
-    .stat-val   { font-family: 'Bebas Neue', sans-serif; font-size: 38px; color: var(--ouro); line-height: 1; margin-top: 6px; }
-    .stat-sub   { font-size: 11px; color: var(--muted); margin-top: 4px; }
+    .slot:hover { border-color: var(--ouro-dim); }
+    .slot.selected { background: var(--ouro); color: var(--preto); border-color: var(--ouro); }
 
-    /* ── FILTROS ── */
-    .filtros {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-      align-items: center;
-    }
-    .filtros label { font-size: 11px; color: var(--muted); }
-    select, input[type="date"] {
+    /* ── FORMULÁRIO ── */
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 12px; color: var(--muted); margin-bottom: 6px; letter-spacing: .06em; }
+    input[type="text"], input[type="tel"] {
+      width: 100%;
       background: var(--carvao);
       border: 1px solid var(--borda);
       border-radius: 8px;
       color: var(--texto);
-      padding: 9px 12px;
-      font-size: 13px;
-      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      padding: 13px 14px;
       outline: none;
+      font-family: 'Inter', sans-serif;
       transition: border-color .2s;
     }
-    select:focus, input[type="date"]:focus { border-color: var(--ouro); }
-    input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.5); }
+    input:focus { border-color: var(--ouro); }
 
-    /* ── TABELA ── */
-    .tabela-wrap { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; }
-    th {
-      text-align: left;
-      font-size: 10px;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      color: var(--muted);
-      padding: 0 12px 12px;
-      white-space: nowrap;
-    }
-    td {
-      padding: 14px 12px;
-      font-size: 13px;
-      border-top: 1px solid var(--borda);
-      vertical-align: middle;
-    }
-    tr:hover td { background: var(--grafite); }
-
-    .badge {
-      display: inline-block;
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: .05em;
-    }
-    .badge-confirmado { background: #0d2e1a; color: var(--ok); }
-    .badge-cancelado  { background: #2e0d0d; color: var(--erro); }
-    .badge-pendente   { background: #2a1e05; color: var(--aviso); }
-
-    .btn-cancel {
-      background: transparent;
-      border: 1px solid var(--borda);
-      color: var(--muted);
-      padding: 5px 10px;
-      border-radius: 6px;
-      font-size: 11px;
-      cursor: pointer;
-      font-family: 'Inter', sans-serif;
-      transition: all .2s;
-    }
-    .btn-cancel:hover { border-color: var(--erro); color: var(--erro); }
-
-    /* ── SEÇÃO GESTÃO ── */
-    .section-title {
-      font-family: 'Bebas Neue', sans-serif;
-      font-size: 26px;
-      margin-bottom: 20px;
-      color: var(--texto);
-    }
-    .section-title span { color: var(--ouro); }
-
-    .form-inline {
+    /* ── RESUMO ── */
+    .resumo {
       background: var(--carvao);
       border: 1px solid var(--borda);
       border-radius: 12px;
       padding: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      align-items: flex-end;
       margin-bottom: 24px;
     }
-    .fi-group { display: flex; flex-direction: column; gap: 5px; }
-    .fi-group label { font-size: 11px; color: var(--muted); letter-spacing: .06em; }
-    .fi-group input, .fi-group select { min-width: 150px; }
-
-    .btn-add {
-      background: var(--ouro);
-      color: var(--preto);
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      font-weight: 700;
-      font-size: 13px;
-      font-family: 'Inter', sans-serif;
-      cursor: pointer;
-      transition: opacity .2s;
-      white-space: nowrap;
-    }
-    .btn-add:hover { opacity: .85; }
-
-    .lista-itens { display: flex; flex-direction: column; gap: 10px; }
-    .item-row {
-      background: var(--carvao);
-      border: 1px solid var(--borda);
-      border-radius: 10px;
-      padding: 14px 16px;
+    .resumo-row {
       display: flex;
-      align-items: center;
       justify-content: space-between;
-      gap: 12px;
+      font-size: 14px;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--borda);
     }
-    .item-info { flex: 1; }
-    .item-nome { font-size: 14px; font-weight: 600; }
-    .item-sub  { font-size: 12px; color: var(--muted); margin-top: 2px; }
-    .btn-del {
-      background: transparent;
-      border: 1px solid var(--borda);
-      color: var(--muted);
-      width: 32px; height: 32px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-size: 16px;
-      display: flex; align-items: center; justify-content: center;
-      transition: all .2s;
-      flex-shrink: 0;
-    }
-    .btn-del:hover { border-color: var(--erro); color: var(--erro); }
+    .resumo-row:last-child { border-bottom: none; }
+    .resumo-row span:first-child { color: var(--muted); }
+    .resumo-row span:last-child  { font-weight: 600; }
 
-    /* ── HORÁRIOS GESTÃO ── */
-    .grid-dias {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-      gap: 16px;
-    }
-    .dia-card {
-      background: var(--carvao);
-      border: 1px solid var(--borda);
-      border-radius: 12px;
-      padding: 16px;
-    }
-    .dia-nome { font-weight: 700; font-size: 14px; margin-bottom: 12px; color: var(--ouro); }
-    .horario-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; min-height: 28px; }
-    .chip {
-      background: var(--grafite);
-      border: 1px solid var(--borda);
-      border-radius: 6px;
-      padding: 4px 10px;
-      font-size: 12px;
-      display: flex; align-items: center; gap: 6px;
-    }
-    .chip-del { cursor: pointer; color: var(--muted); font-size: 14px; line-height: 1; }
-    .chip-del:hover { color: var(--erro); }
-    .add-horario-row { display: flex; gap: 8px; }
-    .add-horario-row input[type="time"] {
-      flex: 1;
-      background: var(--grafite);
-      border: 1px solid var(--borda);
-      border-radius: 6px;
-      color: var(--texto);
-      padding: 7px 10px;
-      font-size: 13px;
-      font-family: 'Inter', sans-serif;
-      outline: none;
-    }
-    .add-horario-row input[type="time"]::-webkit-calendar-picker-indicator { filter: invert(.5); }
-    .btn-add-chip {
+    /* ── BOTÃO PRINCIPAL ── */
+    .btn-confirmar {
+      width: 100%;
       background: var(--ouro);
-      border: none;
       color: var(--preto);
+      border: none;
+      border-radius: 10px;
+      padding: 16px;
+      font-size: 15px;
       font-weight: 700;
-      padding: 7px 14px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 18px;
       font-family: 'Inter', sans-serif;
+      letter-spacing: .04em;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-confirmar:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
+    .btn-confirmar:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+    /* ── DIVISOR ── */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--borda);
+      margin: 40px 0;
     }
 
-    /* ── EMPTY ── */
-    .empty-msg { color: var(--muted); font-size: 13px; text-align: center; padding: 32px 0; }
+    /* ── EMPTY / LOADING ── */
+    .empty-msg { color: var(--muted); font-size: 13px; text-align: center; padding: 20px 0; }
 
     /* ── TOAST ── */
     #toast {
-      position: fixed; bottom: 24px; left: 50%;
+      position: fixed;
+      bottom: 28px; left: 50%;
       transform: translateX(-50%) translateY(80px);
-      background: var(--ok); color: #fff;
-      padding: 13px 26px; border-radius: 10px;
-      font-weight: 600; font-size: 14px;
-      opacity: 0; transition: all .3s;
-      z-index: 9999; white-space: nowrap;
+      background: var(--ok);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      opacity: 0;
+      transition: all .35s ease;
+      z-index: 9999;
+      white-space: nowrap;
     }
     #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-    #toast.erro { background: var(--erro); }
+    #toast.erro  { background: var(--erro); }
 
-    /* ── HIDDEN ── */
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
+    /* ── SUCESSO ── */
+    #tela-sucesso {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .sucesso-icon { font-size: 64px; margin-bottom: 16px; }
+    .sucesso-titulo { font-family: 'Bebas Neue', sans-serif; font-size: 40px; color: var(--ouro); }
+    .sucesso-sub { color: var(--muted); font-size: 14px; margin-top: 10px; }
+    .btn-novo {
+      margin-top: 32px;
+      background: transparent;
+      border: 1px solid var(--ouro);
+      color: var(--ouro);
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      transition: all .2s;
+    }
+    .btn-novo:hover { background: var(--ouro); color: var(--preto); }
 
-    @media (max-width: 500px) {
-      .stats { grid-template-columns: repeat(2, 1fr); }
-      .form-inline { flex-direction: column; }
-      .fi-group input, .fi-group select { min-width: 100%; }
+    @media (max-width: 420px) {
+      .cards { grid-template-columns: repeat(2, 1fr); }
     }
   </style>
 </head>
 <body>
 
-<div class="topbar">
-  <div class="topbar-logo">PAINEL <span>ADMIN</span></div>
-  <div class="topbar-right">
-    <span style="font-size:12px;color:var(--muted);" id="relogio"></span>
-  </div>
+<div class="hero">
+  <p class="hero-eyebrow">Agendamento Online</p>
+  <h1>MARQUE SEU <span>HORÁRIO</span></h1>
+  <p class="hero-sub">Rápido, fácil e sem precisar ligar</p>
 </div>
 
-<div class="tabs">
-  <div class="tab active" onclick="mudarTab('agendamentos', this)">📅 Agendamentos</div>
-  <div class="tab" onclick="mudarTab('profissionais', this)">✂️ Profissionais</div>
-  <div class="tab" onclick="mudarTab('servicos', this)">🛠 Serviços</div>
-  <div class="tab" onclick="mudarTab('horarios', this)">⏰ Horários</div>
-</div>
+<div class="container">
 
-<div class="content">
-
-  <!-- ═══ ABA AGENDAMENTOS ═══ -->
-  <div class="tab-panel active" id="tab-agendamentos">
-
-    <div class="stats">
-      <div class="stat-card">
-        <div class="stat-label">Hoje</div>
-        <div class="stat-val" id="stat-hoje">—</div>
-        <div class="stat-sub">agendamentos</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Semana</div>
-        <div class="stat-val" id="stat-semana">—</div>
-        <div class="stat-sub">agendamentos</div>
-      </div>
-      <div class="stat-card">
-        <div class="stat-label">Confirmados</div>
-        <div class="stat-val" id="stat-conf">—</div>
-        <div class="stat-sub">hoje</div>
-      </div>
-    </div>
-
-    <div class="filtros">
-      <div>
-        <label>Data</label><br/>
-        <input type="date" id="filtro-data" onchange="carregarAgendamentos()" />
-      </div>
-      <div>
-        <label>Profissional</label><br/>
-        <select id="filtro-prof" onchange="carregarAgendamentos()">
-          <option value="">Todos</option>
-        </select>
-      </div>
-      <div>
-        <label>Status</label><br/>
-        <select id="filtro-status" onchange="carregarAgendamentos()">
-          <option value="">Todos</option>
-          <option value="confirmado">Confirmado</option>
-          <option value="cancelado">Cancelado</option>
-        </select>
-      </div>
-    </div>
-
-    <div class="tabela-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Horário</th>
-            <th>Cliente</th>
-            <th>Telefone</th>
-            <th>Profissional</th>
-            <th>Serviço</th>
-            <th>Status</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody id="tbody-agendamentos">
-          <tr><td colspan="7" class="empty-msg">Carregando...</td></tr>
-        </tbody>
-      </table>
-    </div>
+  <!-- TELA SUCESSO -->
+  <div id="tela-sucesso">
+    <div class="sucesso-icon">✂️</div>
+    <div class="sucesso-titulo">AGENDADO!</div>
+    <p class="sucesso-sub" id="sucesso-detalhe"></p>
+    <button class="btn-novo" onclick="reiniciar()">Fazer outro agendamento</button>
   </div>
 
-  <!-- ═══ ABA PROFISSIONAIS ═══ -->
-  <div class="tab-panel" id="tab-profissionais">
-    <div class="section-title">Profissionais <span>Cadastrados</span></div>
+  <!-- FORMULÁRIO PRINCIPAL -->
+  <div id="tela-form">
 
-    <div class="form-inline">
-      <div class="fi-group">
-        <label>NOME</label>
-        <input type="text" id="prof-nome" placeholder="Nome do profissional" maxlength="60" />
-      </div>
-      <div class="fi-group">
-        <label>ESPECIALIDADE</label>
-        <input type="text" id="prof-esp" placeholder="Ex: Corte & Barba" maxlength="60" />
-      </div>
-      <button class="btn-add" onclick="adicionarProfissional()">+ Adicionar</button>
-    </div>
-
-    <div class="lista-itens" id="lista-prof"></div>
-  </div>
-
-  <!-- ═══ ABA SERVIÇOS ═══ -->
-  <div class="tab-panel" id="tab-servicos">
-    <div class="section-title">Serviços <span>Disponíveis</span></div>
-
-    <div class="form-inline">
-      <div class="fi-group">
-        <label>NOME DO SERVIÇO</label>
-        <input type="text" id="serv-nome" placeholder="Ex: Corte Degradê" maxlength="60" />
-      </div>
-      <div class="fi-group">
-        <label>DURAÇÃO (min)</label>
-        <input type="text" id="serv-dur" placeholder="30" style="width:80px;" maxlength="4" />
-      </div>
-      <div class="fi-group">
-        <label>PREÇO (R$)</label>
-        <input type="text" id="serv-preco" placeholder="45,00" style="width:100px;" maxlength="8" />
-      </div>
-      <button class="btn-add" onclick="adicionarServico()">+ Adicionar</button>
-    </div>
-
-    <div class="lista-itens" id="lista-serv"></div>
-  </div>
-
-  <!-- ═══ ABA HORÁRIOS ═══ -->
-  <div class="tab-panel" id="tab-horarios">
-    <div class="section-title">Horários <span>por Profissional</span></div>
-
-    <div class="filtros" style="margin-bottom:24px;">
-      <div>
-        <label>Profissional</label><br/>
-        <select id="horario-prof-sel" onchange="carregarHorariosAdmin()">
-          <option value="">Selecione...</option>
-        </select>
+    <!-- PASSO 1: PROFISSIONAL -->
+    <div class="step" id="passo-profissional">
+      <p class="step-label">Passo 1</p>
+      <h2>Escolha o profissional</h2>
+      <div class="cards" id="lista-profissionais">
+        <p class="empty-msg">Carregando...</p>
       </div>
     </div>
 
-    <div class="grid-dias" id="grid-horarios">
-      <p class="empty-msg" style="grid-column:1/-1;">Selecione um profissional para ver e editar os horários.</p>
-    </div>
-  </div>
+    <hr class="divider" />
 
-</div><!-- /.content -->
+    <!-- PASSO 2: SERVIÇO -->
+    <div class="step" id="passo-servico" style="opacity:.35;pointer-events:none;">
+      <p class="step-label">Passo 2</p>
+      <h2>Escolha o serviço</h2>
+      <div class="cards" id="lista-servicos">
+        <p class="empty-msg">Selecione um profissional primeiro</p>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- PASSO 3: DATA -->
+    <div class="step" id="passo-data" style="opacity:.35;pointer-events:none;">
+      <p class="step-label">Passo 3</p>
+      <h2>Escolha a data</h2>
+      <div class="calendar-header">
+        <button class="cal-nav" id="btn-mes-ant">‹</button>
+        <span class="cal-month" id="cal-titulo"></span>
+        <button class="cal-nav" id="btn-mes-prox">›</button>
+      </div>
+      <div class="calendar-grid" id="calendario"></div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- PASSO 4: HORÁRIO -->
+    <div class="step" id="passo-horario" style="opacity:.35;pointer-events:none;">
+      <p class="step-label">Passo 4</p>
+      <h2>Escolha o horário</h2>
+      <div class="slots" id="lista-horarios">
+        <p class="empty-msg">Selecione uma data primeiro</p>
+      </div>
+    </div>
+
+    <hr class="divider" />
+
+    <!-- PASSO 5: DADOS + CONFIRMAÇÃO -->
+    <div class="step" id="passo-dados" style="opacity:.35;pointer-events:none;">
+      <p class="step-label">Passo 5</p>
+      <h2>Seus dados</h2>
+
+      <div class="form-group">
+        <label>SEU NOME</label>
+        <input type="text" id="inp-nome" placeholder="Como você se chama?" maxlength="60" />
+      </div>
+      <div class="form-group">
+        <label>TELEFONE / WHATSAPP</label>
+        <input type="tel" id="inp-telefone" placeholder="(11) 99999-9999" maxlength="20" />
+      </div>
+
+      <div class="resumo" id="resumo-box" style="display:none;">
+        <div class="resumo-row"><span>Profissional</span><span id="r-prof">—</span></div>
+        <div class="resumo-row"><span>Serviço</span><span id="r-serv">—</span></div>
+        <div class="resumo-row"><span>Data</span><span id="r-data">—</span></div>
+        <div class="resumo-row"><span>Horário</span><span id="r-hora">—</span></div>
+      </div>
+
+      <button class="btn-confirmar" id="btn-confirmar" disabled onclick="confirmarAgendamento()">
+        Confirmar agendamento
+      </button>
+    </div>
+
+  </div><!-- /#tela-form -->
+</div><!-- /.container -->
 
 <div id="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="../js/supabase.js"></script>
+<script src="js/supabase.js"></script>
 <script>
-// ─── RELÓGIO ───
-function atualizarRelogio() {
-  const now = new Date();
-  document.getElementById('relogio').textContent =
-    now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-}
-atualizarRelogio();
-setInterval(atualizarRelogio, 10000);
+// ─────────────────────────────────────────
+//  ESTADO
+// ─────────────────────────────────────────
+let sel = { profissional: null, servico: null, data: null, horario: null };
+let calAno, calMes;
 
-// ─── TABS ───
-function mudarTab(nome, el) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  document.getElementById('tab-' + nome).classList.add('active');
-  if (nome === 'agendamentos') carregarAgendamentos();
-  if (nome === 'profissionais') carregarListaProfissionais();
-  if (nome === 'servicos') carregarListaServicos();
-  if (nome === 'horarios') iniciarHorarios();
-}
+const hoje = new Date();
+calAno = hoje.getFullYear();
+calMes = hoje.getMonth();
 
-// ─── INIT ───
+// ─────────────────────────────────────────
+//  INIT
+// ─────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  const hoje = new Date().toISOString().slice(0, 10);
-  document.getElementById('filtro-data').value = hoje;
-  carregarAgendamentos();
-  carregarFiltroProfs();
-  carregarStats();
+  carregarProfissionais();
+  renderCalendario();
+  document.getElementById('btn-mes-ant').onclick  = () => mudarMes(-1);
+  document.getElementById('btn-mes-prox').onclick = () => mudarMes(1);
+  document.getElementById('inp-nome').addEventListener('input', checarFormulario);
+  document.getElementById('inp-telefone').addEventListener('input', checarFormulario);
 });
 
-// ═══════════════════════════════
-//  AGENDAMENTOS
-// ═══════════════════════════════
-async function carregarStats() {
-  const hoje = new Date().toISOString().slice(0, 10);
-  const semIni = new Date();
-  semIni.setDate(semIni.getDate() - semIni.getDay());
-
-  const { data: dHoje } = await db.from('agendamentos').select('id,status').eq('data', hoje);
-  const { data: dSem  } = await db.from('agendamentos').select('id').gte('data', semIni.toISOString().slice(0,10));
-
-  document.getElementById('stat-hoje').textContent   = dHoje?.length ?? 0;
-  document.getElementById('stat-semana').textContent = dSem?.length  ?? 0;
-  document.getElementById('stat-conf').textContent   = dHoje?.filter(a => a.status === 'confirmado').length ?? 0;
+// ─────────────────────────────────────────
+//  PROFISSIONAIS
+// ─────────────────────────────────────────
+async function carregarProfissionais() {
+  const { data, error } = await db.from('profissionais').select('*').eq('ativo', true).order('nome');
+  const el = document.getElementById('lista-profissionais');
+  if (error || !data?.length) { el.innerHTML = '<p class="empty-msg">Nenhum profissional disponível</p>'; return; }
+  el.innerHTML = data.map(p => `
+    <div class="card" data-id="${p.id}" data-nome="${p.nome}" onclick="selecionarProfissional(this)">
+      <div class="card-name">${p.nome}</div>
+      <div class="card-sub">${p.especialidade || ''}</div>
+    </div>`).join('');
 }
 
-async function carregarFiltroProfs() {
-  const { data } = await db.from('profissionais').select('id,nome').eq('ativo', true).order('nome');
-  const selA = document.getElementById('filtro-prof');
-  const selH = document.getElementById('horario-prof-sel');
-  (data || []).forEach(p => {
-    selA.innerHTML += `<option value="${p.id}">${p.nome}</option>`;
-    selH.innerHTML += `<option value="${p.id}">${p.nome}</option>`;
-  });
+function selecionarProfissional(el) {
+  document.querySelectorAll('#lista-profissionais .card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  sel.profissional = { id: el.dataset.id, nome: el.dataset.nome };
+  sel.servico = null; sel.data = null; sel.horario = null;
+  ativarPasso('passo-servico');
+  carregarServicos();
+  desativarPasso('passo-data');
+  desativarPasso('passo-horario');
+  desativarPasso('passo-dados');
+  atualizarResumo();
 }
 
-async function carregarAgendamentos() {
-  const data   = document.getElementById('filtro-data').value;
-  const prof   = document.getElementById('filtro-prof').value;
-  const status = document.getElementById('filtro-status').value;
-  const tbody  = document.getElementById('tbody-agendamentos');
-  tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Carregando...</td></tr>';
+// ─────────────────────────────────────────
+//  SERVIÇOS
+// ─────────────────────────────────────────
+async function carregarServicos() {
+  const el = document.getElementById('lista-servicos');
+  el.innerHTML = '<p class="empty-msg">Carregando...</p>';
 
-  let q = db.from('agendamentos')
-    .select('*, profissionais(nome), servicos(nome)')
+  const { data, error } = await db.from('servicos')
+    .select('*').eq('ativo', true).order('nome');
+
+  if (error || !data?.length) { el.innerHTML = '<p class="empty-msg">Nenhum serviço cadastrado</p>'; return; }
+  el.innerHTML = data.map(s => `
+    <div class="card" data-id="${s.id}" data-nome="${s.nome}" data-preco="${s.preco || ''}" onclick="selecionarServico(this)">
+      <div class="card-name">${s.nome}</div>
+      ${s.duracao_min ? `<div class="card-sub">${s.duracao_min} min</div>` : ''}
+      ${s.preco ? `<div class="card-price">R$ ${Number(s.preco).toFixed(2)}</div>` : ''}
+    </div>`).join('');
+}
+
+function selecionarServico(el) {
+  document.querySelectorAll('#lista-servicos .card').forEach(c => c.classList.remove('selected'));
+  el.classList.add('selected');
+  sel.servico = { id: el.dataset.id, nome: el.dataset.nome };
+  sel.data = null; sel.horario = null;
+  ativarPasso('passo-data');
+  desativarPasso('passo-horario');
+  desativarPasso('passo-dados');
+  atualizarResumo();
+}
+
+// ─────────────────────────────────────────
+//  CALENDÁRIO
+// ─────────────────────────────────────────
+const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+const DIAS  = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+
+function mudarMes(d) {
+  calMes += d;
+  if (calMes < 0)  { calMes = 11; calAno--; }
+  if (calMes > 11) { calMes = 0;  calAno++; }
+  renderCalendario();
+}
+
+function renderCalendario() {
+  document.getElementById('cal-titulo').textContent = `${MESES[calMes]} ${calAno}`;
+  const grid = document.getElementById('calendario');
+  const primeiroDia = new Date(calAno, calMes, 1).getDay();
+  const totalDias   = new Date(calAno, calMes + 1, 0).getDate();
+
+  let html = DIAS.map(d => `<div class="cal-day-name">${d}</div>`).join('');
+  for (let i = 0; i < primeiroDia; i++) html += `<div class="cal-day empty"></div>`;
+
+  for (let d = 1; d <= totalDias; d++) {
+    const data   = new Date(calAno, calMes, d);
+    const eHoje  = data.toDateString() === hoje.toDateString();
+    const passado = data < new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+    const str    = `${calAno}-${String(calMes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const selec  = sel.data === str;
+    let cls = 'cal-day';
+    if (passado) cls += ' disabled';
+    else if (selec) cls += ' selected';
+    else if (eHoje) cls += ' today';
+
+    html += `<div class="${cls}" ${!passado ? `onclick="selecionarData('${str}',this)"` : ''}>${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function selecionarData(str, el) {
+  sel.data = str;
+  sel.horario = null;
+  renderCalendario();
+  ativarPasso('passo-horario');
+  desativarPasso('passo-dados');
+  carregarHorarios(str);
+  atualizarResumo();
+}
+
+// ─────────────────────────────────────────
+//  HORÁRIOS
+// ─────────────────────────────────────────
+async function carregarHorarios(dataStr) {
+  const el = document.getElementById('lista-horarios');
+  el.innerHTML = '<p class="empty-msg">Carregando horários...</p>';
+
+  // busca slots configurados para o profissional nesse dia da semana
+  const diaSemana = new Date(dataStr + 'T12:00:00').getDay();
+  const { data: slots } = await db.from('horarios_disponiveis')
+    .select('horario')
+    .eq('profissional_id', sel.profissional.id)
+    .eq('dia_semana', diaSemana)
     .order('horario');
 
-  if (data)   q = q.eq('data', data);
-  if (prof)   q = q.eq('profissional_id', prof);
-  if (status) q = q.eq('status', status);
+  if (!slots?.length) { el.innerHTML = '<p class="empty-msg">Sem horários para este dia</p>'; return; }
 
-  const { data: rows, error } = await q;
-  if (error || !rows?.length) {
-    tbody.innerHTML = '<tr><td colspan="7" class="empty-msg">Nenhum agendamento encontrado</td></tr>';
+  // busca agendamentos já feitos
+  const { data: ocupados } = await db.from('agendamentos')
+    .select('horario')
+    .eq('profissional_id', sel.profissional.id)
+    .eq('data', dataStr)
+    .neq('status', 'cancelado');
+
+  const ocupSet = new Set((ocupados || []).map(a => a.horario));
+
+  const livres = slots.filter(s => !ocupSet.has(s.horario));
+  if (!livres.length) { el.innerHTML = '<p class="empty-msg">Todos os horários estão ocupados</p>'; return; }
+
+  el.innerHTML = livres.map(s => `
+    <div class="slot" data-hora="${s.horario}" onclick="selecionarHorario('${s.horario}', this)">
+      ${s.horario.slice(0,5)}
+    </div>`).join('');
+}
+
+function selecionarHorario(hora, el) {
+  document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
+  el.classList.add('selected');
+  sel.horario = hora;
+  ativarPasso('passo-dados');
+  atualizarResumo();
+  checarFormulario();
+  document.getElementById('resumo-box').style.display = 'block';
+  setTimeout(() => document.getElementById('passo-dados').scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+}
+
+// ─────────────────────────────────────────
+//  RESUMO + FORMULÁRIO
+// ─────────────────────────────────────────
+function atualizarResumo() {
+  if (sel.profissional) document.getElementById('r-prof').textContent = sel.profissional.nome;
+  if (sel.servico)      document.getElementById('r-serv').textContent = sel.servico.nome;
+  if (sel.data)         document.getElementById('r-data').textContent = formatarData(sel.data);
+  if (sel.horario)      document.getElementById('r-hora').textContent = sel.horario.slice(0,5);
+}
+
+function formatarData(str) {
+  const [a, m, d] = str.split('-');
+  return `${d}/${m}/${a}`;
+}
+
+function checarFormulario() {
+  const ok = sel.profissional && sel.servico && sel.data && sel.horario
+    && document.getElementById('inp-nome').value.trim()
+    && document.getElementById('inp-telefone').value.trim();
+  document.getElementById('btn-confirmar').disabled = !ok;
+}
+
+// ─────────────────────────────────────────
+//  CONFIRMAR
+// ─────────────────────────────────────────
+async function confirmarAgendamento() {
+  const nome = document.getElementById('inp-nome').value.trim();
+  const tel  = document.getElementById('inp-telefone').value.trim();
+  const btn  = document.getElementById('btn-confirmar');
+  btn.disabled = true;
+  btn.textContent = 'Aguarde...';
+
+  // Verificação de conflito (race condition)
+  const { data: conf } = await db.from('agendamentos')
+    .select('id')
+    .eq('profissional_id', sel.profissional.id)
+    .eq('data', sel.data)
+    .eq('horario', sel.horario)
+    .neq('status', 'cancelado');
+
+  if (conf?.length) {
+    toast('Esse horário acabou de ser ocupado. Escolha outro.', true);
+    btn.disabled = false; btn.textContent = 'Confirmar agendamento';
+    sel.horario = null;
+    document.querySelectorAll('.slot').forEach(s => s.classList.remove('selected'));
     return;
   }
 
-  tbody.innerHTML = rows.map(r => `
-    <tr>
-      <td style="font-weight:700;font-size:15px;">${r.horario?.slice(0,5)}</td>
-      <td>${r.cliente_nome}</td>
-      <td style="color:var(--muted);">${r.cliente_tel}</td>
-      <td>${r.profissionais?.nome || '—'}</td>
-      <td>${r.servicos?.nome || '—'}</td>
-      <td><span class="badge badge-${r.status}">${r.status}</span></td>
-      <td>${r.status !== 'cancelado' ? `<button class="btn-cancel" onclick="cancelar('${r.id}')">Cancelar</button>` : ''}</td>
-    </tr>`).join('');
-}
-
-async function cancelar(id) {
-  if (!confirm('Cancelar este agendamento?')) return;
-  const { error } = await db.from('agendamentos').update({ status: 'cancelado' }).eq('id', id);
-  if (error) { toast('Erro ao cancelar', true); return; }
-  toast('Agendamento cancelado');
-  carregarAgendamentos();
-  carregarStats();
-}
-
-// ═══════════════════════════════
-//  PROFISSIONAIS
-// ═══════════════════════════════
-async function carregarListaProfissionais() {
-  const el = document.getElementById('lista-prof');
-  el.innerHTML = '<p class="empty-msg">Carregando...</p>';
-  const { data } = await db.from('profissionais').select('*').order('nome');
-  if (!data?.length) { el.innerHTML = '<p class="empty-msg">Nenhum profissional cadastrado</p>'; return; }
-  el.innerHTML = data.map(p => `
-    <div class="item-row">
-      <div class="item-info">
-        <div class="item-nome">${p.nome}</div>
-        <div class="item-sub">${p.especialidade || 'Sem especialidade definida'}</div>
-      </div>
-      <button class="btn-del" onclick="deletarProfissional('${p.id}')" title="Remover">✕</button>
-    </div>`).join('');
-}
-
-async function adicionarProfissional() {
-  const nome = document.getElementById('prof-nome').value.trim();
-  const esp  = document.getElementById('prof-esp').value.trim();
-  if (!nome) { toast('Informe o nome', true); return; }
-  const { error } = await db.from('profissionais').insert({ nome, especialidade: esp, ativo: true });
-  if (error) { toast('Erro ao adicionar', true); return; }
-  document.getElementById('prof-nome').value = '';
-  document.getElementById('prof-esp').value  = '';
-  toast('Profissional adicionado!');
-  carregarListaProfissionais();
-  recarregarFiltros();
-}
-
-async function deletarProfissional(id) {
-  if (!confirm('Remover este profissional?')) return;
-  await db.from('profissionais').update({ ativo: false }).eq('id', id);
-  toast('Profissional removido');
-  carregarListaProfissionais();
-}
-
-// ═══════════════════════════════
-//  SERVIÇOS
-// ═══════════════════════════════
-async function carregarListaServicos() {
-  const el = document.getElementById('lista-serv');
-  el.innerHTML = '<p class="empty-msg">Carregando...</p>';
-  const { data } = await db.from('servicos').select('*').eq('ativo', true).order('nome');
-  if (!data?.length) { el.innerHTML = '<p class="empty-msg">Nenhum serviço cadastrado</p>'; return; }
-  el.innerHTML = data.map(s => `
-    <div class="item-row">
-      <div class="item-info">
-        <div class="item-nome">${s.nome}</div>
-        <div class="item-sub">${s.duracao_min ? s.duracao_min + ' min' : ''}${s.duracao_min && s.preco ? ' · ' : ''}${s.preco ? 'R$ ' + Number(s.preco).toFixed(2) : ''}</div>
-      </div>
-      <button class="btn-del" onclick="deletarServico('${s.id}')" title="Remover">✕</button>
-    </div>`).join('');
-}
-
-async function adicionarServico() {
-  const nome  = document.getElementById('serv-nome').value.trim();
-  const dur   = parseInt(document.getElementById('serv-dur').value) || null;
-  const preco = parseFloat(document.getElementById('serv-preco').value.replace(',', '.')) || null;
-  if (!nome) { toast('Informe o nome do serviço', true); return; }
-  const { error } = await db.from('servicos').insert({ nome, duracao_min: dur, preco, ativo: true });
-  if (error) { toast('Erro ao adicionar', true); return; }
-  document.getElementById('serv-nome').value  = '';
-  document.getElementById('serv-dur').value   = '';
-  document.getElementById('serv-preco').value = '';
-  toast('Serviço adicionado!');
-  carregarListaServicos();
-}
-
-async function deletarServico(id) {
-  if (!confirm('Remover este serviço?')) return;
-  await db.from('servicos').update({ ativo: false }).eq('id', id);
-  toast('Serviço removido');
-  carregarListaServicos();
-}
-
-// ═══════════════════════════════
-//  HORÁRIOS
-// ═══════════════════════════════
-const DIAS_SEMANA = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-
-async function iniciarHorarios() {
-  // filtro de prof já carregado
-}
-
-async function carregarHorariosAdmin() {
-  const profId = document.getElementById('horario-prof-sel').value;
-  const grid   = document.getElementById('grid-horarios');
-  if (!profId) { grid.innerHTML = '<p class="empty-msg" style="grid-column:1/-1;">Selecione um profissional.</p>'; return; }
-
-  const { data } = await db.from('horarios_disponiveis').select('*').eq('profissional_id', profId).order('dia_semana').order('horario');
-
-  grid.innerHTML = DIAS_SEMANA.map((nome, idx) => {
-    const horariosHoje = (data || []).filter(h => h.dia_semana === idx);
-    return `
-    <div class="dia-card">
-      <div class="dia-nome">${nome}</div>
-      <div class="horario-chips" id="chips-${idx}">
-        ${horariosHoje.map(h => chipHtml(h.id, h.horario)).join('')}
-        ${!horariosHoje.length ? '<span style="font-size:12px;color:var(--muted);">Sem horários</span>' : ''}
-      </div>
-      <div class="add-horario-row">
-        <input type="time" id="inp-hr-${idx}" />
-        <button class="btn-add-chip" onclick="adicionarHorario('${profId}', ${idx})">+</button>
-      </div>
-    </div>`;
-  }).join('');
-}
-
-function chipHtml(id, horario) {
-  return `<div class="chip">${horario.slice(0,5)}<span class="chip-del" onclick="deletarHorario('${id}')">×</span></div>`;
-}
-
-async function adicionarHorario(profId, dia) {
-  const inp = document.getElementById(`inp-hr-${dia}`);
-  const hr  = inp.value;
-  if (!hr) { toast('Informe o horário', true); return; }
-
-  const { error } = await db.from('horarios_disponiveis').insert({
-    profissional_id: profId,
-    dia_semana: dia,
-    horario: hr + ':00'
+  const { error } = await db.from('agendamentos').insert({
+    profissional_id: sel.profissional.id,
+    servico_id:      sel.servico.id,
+    data:            sel.data,
+    horario:         sel.horario,
+    cliente_nome:    nome,
+    cliente_tel:     tel,
+    status:          'confirmado'
   });
-  if (error) { toast('Erro ou horário já existe', true); return; }
-  inp.value = '';
-  toast('Horário adicionado!');
-  carregarHorariosAdmin();
+
+  if (error) {
+    toast('Erro ao agendar. Tente novamente.', true);
+    btn.disabled = false; btn.textContent = 'Confirmar agendamento';
+    return;
+  }
+
+  document.getElementById('tela-form').style.display = 'none';
+  document.getElementById('tela-sucesso').style.display = 'block';
+  document.getElementById('sucesso-detalhe').textContent =
+    `${nome}, seu agendamento com ${sel.profissional.nome} está confirmado para ${formatarData(sel.data)} às ${sel.horario.slice(0,5)}.`;
 }
 
-async function deletarHorario(id) {
-  await db.from('horarios_disponiveis').delete().eq('id', id);
-  toast('Horário removido');
-  carregarHorariosAdmin();
+function reiniciar() {
+  sel = { profissional: null, servico: null, data: null, horario: null };
+  document.getElementById('tela-form').style.display = 'block';
+  document.getElementById('tela-sucesso').style.display = 'none';
+  document.getElementById('inp-nome').value = '';
+  document.getElementById('inp-telefone').value = '';
+  document.getElementById('btn-confirmar').disabled = true;
+  document.getElementById('btn-confirmar').textContent = 'Confirmar agendamento';
+  document.getElementById('resumo-box').style.display = 'none';
+  desativarPasso('passo-servico');
+  desativarPasso('passo-data');
+  desativarPasso('passo-horario');
+  desativarPasso('passo-dados');
+  carregarProfissionais();
+  calAno = hoje.getFullYear(); calMes = hoje.getMonth();
+  renderCalendario();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-// ─── UTILITÁRIOS ───
-async function recarregarFiltros() {
-  const selA = document.getElementById('filtro-prof');
-  const selH = document.getElementById('horario-prof-sel');
-  selA.innerHTML = '<option value="">Todos</option>';
-  selH.innerHTML = '<option value="">Selecione...</option>';
-  const { data } = await db.from('profissionais').select('id,nome').eq('ativo', true).order('nome');
-  (data || []).forEach(p => {
-    selA.innerHTML += `<option value="${p.id}">${p.nome}</option>`;
-    selH.innerHTML += `<option value="${p.id}">${p.nome}</option>`;
-  });
+// ─────────────────────────────────────────
+//  UTILITÁRIOS
+// ─────────────────────────────────────────
+function ativarPasso(id) {
+  const el = document.getElementById(id);
+  el.style.opacity = '1'; el.style.pointerEvents = 'auto';
+}
+function desativarPasso(id) {
+  const el = document.getElementById(id);
+  el.style.opacity = '.35'; el.style.pointerEvents = 'none';
 }
 
 let toastTimer;
@@ -702,7 +670,7 @@ function toast(msg, erro = false) {
   t.textContent = msg;
   t.className = 'show' + (erro ? ' erro' : '');
   clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => t.className = '', 3000);
+  toastTimer = setTimeout(() => t.className = '', 3500);
 }
 </script>
 </body>
