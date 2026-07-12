@@ -123,7 +123,7 @@
     .section-title { font-size: 26px; font-weight: 700; margin-bottom: 14px; font-family: 'Bebas Neue', sans-serif; letter-spacing: .03em; font-size: 32px; }
     .section-sub { color: var(--muted); font-size: 14px; margin-bottom: 28px; max-width: 560px; line-height: 1.6; }
 
-    /* ── CARDS ── */
+        /* ── CARDS ── */
     .cards {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -134,7 +134,9 @@
       border: 1px solid var(--borda);
       border-radius: 10px;
       padding: 20px 18px;
-      transition: border-color .2s, transform .15s;
+      cursor: pointer;
+      /* Transição suave para que o formato mude de forma fluida */
+      transition: border-color .3s, transform .3s, border-radius .4s ease-in-out, background-color .3s;
     }
     .card:hover { border-color: var(--ouro-dim); transform: translateY(-2px); }
     .card-name { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
@@ -145,6 +147,24 @@
     .card.gourmet:hover { border-color: var(--cobre); }
     .card.gourmet .card-price { color: var(--cobre); }
     .card.destaque { border-color: var(--ouro-dim); background: #1e1a0f; }
+
+    /* Nova regra: Transforma em metade esquerda do bigode ao clicar */
+    .card.active {
+      border-color: var(--ouro) !important;
+      background-color: #1e1a0f !important;
+      transform: scale(1.02);
+      border-radius: 90px 15px 90px 15px !important;
+    }
+    /* Nova regra: Transforma em metade direita do bigode se for um card par */
+    .card:nth-child(even).active {
+      border-radius: 15px 90px 15px 90px !important;
+    }
+    /* Mantém a identidade cobre nos itens gourmet ativos */
+    .card.gourmet.active {
+      border-color: var(--cobre) !important;
+      background-color: #1a120c !important;
+    }
+
 
     /* ── DIVISOR ── */
     .divider {
@@ -378,6 +398,20 @@
   <p>Rua das Tesouras, 123 — Centro</p>
   <p>&copy; 2026 Barber Club. Todos os direitos reservados.</p>
 </footer>
+  <script>
+    const cards = document.querySelectorAll('.card');
+
+    cards.forEach(card => {
+      card.addEventListener('click', () => {
+        // Remove o formato de bigode dos outros cards
+        cards.forEach(c => c.classList.remove('active'));
+        
+        // Ativa o formato de bigode no card que recebeu o clique
+        card.classList.add('active');
+      });
+    });
+  </script>
+</body>
 
 </body>
 </html>
